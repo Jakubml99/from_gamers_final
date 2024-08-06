@@ -16,6 +16,9 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('add_product/', views.add_product, name='add_product'),
     path('edit_product/<int:product_id>/', views.edit_product, name='edit_product'),
+    path('add_category/', views.add_category, name='add_category'),
+    path('edit_category/<int:category_id>/', views.edit_category, name='edit_category'),
     path('accounts/login/', views.CustomLoginView.as_view(), name='login'),
-    path('accounts/logout/', LogoutView.as_view(), name='logout'),  # Optional: Add logout view
+    path('accounts/logout/', LogoutView.as_view(next_page='store:home'), name='logout'),
+    path('accounts/register/', views.register, name='register'),
 ]

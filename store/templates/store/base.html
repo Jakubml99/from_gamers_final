@@ -31,6 +31,8 @@
                                 <div class="dropdown-menu" aria-labelledby="staffOnlyMenu">
                                     <a class="dropdown-item" href="{% url 'store:add_product' %}">Add Product</a>
                                     <a class="dropdown-item" href="{% url 'store:admin_panel' %}">Admin Panel</a>
+                                    <a class="dropdown-item" href="{% url 'store:add_category' %}">Add Category</a>
+                                    <a class="dropdown-item" href="{% url 'store:edit_category' category_id=1 %}">Edit Category</a>
                                 </div>
                             </li>
                         {% endif %}

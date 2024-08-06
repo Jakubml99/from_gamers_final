@@ -1,22 +1,19 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
 from .models import Product, OrderItem, Order, Profile, Category
 from .forms import ProductForm, UserForm, ProfileForm, CategoryForm
 
-# Function to check if the user is staff
 def staff_required(user):
     return user.is_staff
 
-# Existing views
 def home(request):
     return render(request, 'store/home.html')
 
 def product_list(request):
     products = Product.objects.all()
-    print(f"Number of products: {products.count()}")
     return render(request, 'store/product_list.html', {'products': products})
 
 @login_required
@@ -97,7 +94,7 @@ def profile(request):
     try:
         profile = request.user.profile
     except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user, role='user')  # Provide a default role
+        profile = Profile.objects.create(user=request.user, role='user')
 
     user_form = UserForm(instance=request.user)
     profile_form = ProfileForm(instance=profile)
@@ -112,7 +109,9 @@ def profile(request):
 
     return render(request, 'store/profile.html', {'user_form': user_form, 'profile_form': profile_form})
 
-# New registration view
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -122,13 +121,7 @@ def register(request):
             return redirect('store:home')
     else:
         form = UserCreationForm()
-    return render(request, 'store/register.html', {'form': form})
-
-# New login view using Django's built-in LoginView
-class CustomLoginView(LoginView):
-    template_name = 'registration/login.html'
-
-# Category management views
+    return render(request, 'registration/register.html', {'form': form})
 
 @login_required
 @user_passes_test(staff_required)
