@@ -7,18 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product List</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'products' %}">Products</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
     <main>
         <h1>Product List</h1>
         <section class="product-grid">
@@ -38,9 +30,6 @@
             {% endfor %}
         </section>
     </main>
-    <footer>
-        <p>&copy; {{ current_year }} Your Company</p>
-    </footer>
 </body>
 </html>
 {% endblock %}

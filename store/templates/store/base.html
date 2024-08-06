@@ -4,45 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}From Gamers 4 Gamers{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="{% url 'store:home' %}">From Gamers 4 Gamers</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'store:home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'store:product_list' %}">Products</a></li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'store:view_cart' %}">Cart</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'store:profile' %}">Profile</a></li>
+                        {% if user.is_staff %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staffOnlyMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Staff Only
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="staffOnlyMenu">
+                                    <a class="dropdown-item" href="{% url 'store:add_product' %}">Add Product</a>
+                                    <a class="dropdown-item" href="{% url 'store:admin_panel' %}">Admin Panel</a>
+                                </div>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="bg-dark text-white text-center p-3 mt-4">
+        Magdalena and Jakub SDA project 2024
+    </footer>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    {% block extra_head %}{% endblock %}
-</head>
-<body>
-    <header class="bg-dark text-white p-3">
-        <div class="container d-flex justify-content-between align-items-center">
-            <h1 class="h3">From Gamers 4 Gamers</h1>
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:home' %}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:product_list' %}">Products</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:view_cart' %}">Cart</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:profile' %}">Profile</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:home' %}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:product_list' %}">Products</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:view_cart' %}">Cart</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:profile' %}">Profile</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:admin_panel' %}">Admin Panel</a></li>
-
-
-                    {% if user.is_staff %}
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'store:admin_panel' %}">Admin Panel</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-            <a href="{% url 'store:view_cart' %}" class="text-white ml-3"><i class="fas fa-shopping-cart fa-lg"></i></a>
-        </div>
-    </header>
-
-    <main role="main" class="container mt-4">
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer class="bg-dark text-white text-center py-3">
-        <p>&copy; {{ current_year }} From Gamers 4 Gamers</p>
-    </footer>
 </body>
 </html>

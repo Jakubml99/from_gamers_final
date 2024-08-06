@@ -69,7 +69,7 @@ ROOT_URLCONF = 'from_gamers_4_gamers.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Optionally specify a list of directories to search for templates
+        'DIRS': [os.path.join(BASE_DIR, 'store', 'templates', 'store')],  # Optionally specify a list of directories to search for templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,14 +93,13 @@ WSGI_APPLICATION = 'from_gamers_4_gamers.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'from_gamers_4_gamers',
+        'NAME': 'base_from_gamers_4_gamers',
         'USER': 'root',
         'PASSWORD': '12345',
         'HOST': 'localhost',
         'PORT': '3306',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

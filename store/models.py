@@ -1,5 +1,3 @@
-# store/models.py
-
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,10 +9,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-
-from django.db import models
-
-
 class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -22,8 +16,8 @@ class Product(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     category = models.CharField(max_length=50)
     stock = models.IntegerField(default=0)
-    slug = models.SlugField(unique=True)  # Add this line if 'slug' is needed
-    available = models.BooleanField(default=True)  # Ensure this is set to True
+    slug = models.SlugField(unique=True)
+    available = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -53,8 +47,6 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.price * self.quantity
-
-from django.contrib.auth.models import User
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
