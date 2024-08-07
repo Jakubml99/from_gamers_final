@@ -13,8 +13,19 @@ def home(request):
     return render(request, 'store/home.html')
 
 def product_list(request):
-    products = Product.objects.all()
-    return render(request, 'store/product_list.html', {'products': products})
+    categories = Category.objects.all()
+    selected_category = request.GET.get('category')
+    if selected_category:
+        products = Product.objects.filter(category__id=selected_category)
+    else:
+        products = Product.objects.all()
+
+    context = {
+        'products': products,
+        'categories': categories,
+        'selected_category': selected_category,
+    }
+    return render(request, 'store/product_list.html', context)
 
 @login_required
 def view_cart(request):
@@ -62,7 +73,16 @@ def checkout(request):
 @user_passes_test(staff_required)
 def admin_panel(request):
     products = Product.objects.all()
-    return render(request, 'store/admin_panel.html', {'products': products})
+    categories = Category.objects.all()
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        category_id = request.POST.get('category_id')
+        product = get_object_or_404(Product, id=product_id)
+        category = get_object_or_404(Category, id=category_id)
+        product.category = category
+        product.save()
+        return redirect('store:admin_panel')
+    return render(request, 'store/admin_panel.html', {'products': products, 'categories': categories})
 
 @login_required
 @user_passes_test(staff_required)
