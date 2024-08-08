@@ -24,10 +24,3 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['name', 'slug']
-
-
-from django import forms
-from .models import Category
-
-class CategoryFilterForm(forms.Form):
-    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False, label='Select Category')
