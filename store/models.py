@@ -3,8 +3,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 class Category(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=50)
+    parent_category = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -14,9 +14,8 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
-    category = models.CharField(max_length=50)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     stock = models.IntegerField(default=0)
-    slug = models.SlugField(unique=True)
     available = models.BooleanField(default=True)
 
     def __str__(self):
@@ -27,8 +26,7 @@ class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
-    payment_id = models.CharField(max_length=255, blank=True, null=True)
-    payment_status = models.CharField(max_length=255, blank=True, null=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return f'Order {self.id}'
@@ -55,3 +53,23 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    comment = models.TextField()
+    review_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Review {self.id} by {self.user.username}'
+
+class Payment(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    payment_date = models.DateTimeField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f'Payment {self.id}'

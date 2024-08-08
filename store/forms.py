@@ -1,11 +1,11 @@
 from django import forms
-from .models import Product, Profile, Category
 from django.contrib.auth.models import User
+from .models import Product, Profile, Category, Review
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'category', 'stock', 'image', 'slug', 'available']
+        fields = ['name', 'description', 'price', 'category', 'stock', 'image', 'available']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
         }
@@ -23,4 +23,9 @@ class ProfileForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['name', 'slug']
+        fields = ['name', 'parent_category']
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'comment']

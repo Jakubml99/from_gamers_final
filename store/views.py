@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
-from .models import Product, OrderItem, Order, Profile, Category
-from .forms import ProductForm, UserForm, ProfileForm, CategoryForm
+from .models import Product, OrderItem, Order, Profile, Category, Review
+from .forms import ProductForm, UserForm, ProfileForm, CategoryForm, ReviewForm
 
 def staff_required(user):
     return user.is_staff
