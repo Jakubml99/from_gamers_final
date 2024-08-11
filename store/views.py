@@ -6,12 +6,15 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import Product, OrderItem, Order, Profile, Category, Review
 from .forms import ProductForm, UserForm, ProfileForm, CategoryForm, ReviewForm
 
+# Custom decorator to check if the user is staff
 def staff_required(user):
     return user.is_staff
 
+# Home view
 def home(request):
     return render(request, 'store/home.html')
 
+# Product listing view
 def product_list(request):
     categories = Category.objects.all()
     selected_category = request.GET.get('category')
@@ -27,11 +30,13 @@ def product_list(request):
     }
     return render(request, 'store/product_list.html', context)
 
+# View cart
 @login_required
 def view_cart(request):
     order = Order.objects.filter(user=request.user, paid=False).first()
     return render(request, 'store/cart.html', {'order': order})
 
+# Add product to cart
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -42,6 +47,7 @@ def add_to_cart(request, product_id):
         order_item.save()
     return redirect('store:view_cart')
 
+# Update cart item quantity
 @login_required
 def update_cart(request, item_id):
     order_item = get_object_or_404(OrderItem, id=item_id, order__user=request.user, order__paid=False)
@@ -54,12 +60,14 @@ def update_cart(request, item_id):
             order_item.delete()
     return redirect('store:view_cart')
 
+# Delete item from cart
 @login_required
 def delete_from_cart(request, item_id):
     order_item = get_object_or_404(OrderItem, id=item_id, order__user=request.user, order__paid=False)
     order_item.delete()
     return redirect('store:view_cart')
 
+# Checkout view
 @login_required
 def checkout(request):
     order = Order.objects.filter(user=request.user, paid=False).first()
@@ -69,6 +77,7 @@ def checkout(request):
         return redirect('store:home')
     return render(request, 'store/checkout.html', {'order': order})
 
+# Admin panel view (staff only)
 @login_required
 @user_passes_test(staff_required)
 def admin_panel(request):
@@ -84,6 +93,7 @@ def admin_panel(request):
         return redirect('store:admin_panel')
     return render(request, 'store/admin_panel.html', {'products': products, 'categories': categories})
 
+# Add product view (staff only)
 @login_required
 @user_passes_test(staff_required)
 def add_product(request):
@@ -96,6 +106,7 @@ def add_product(request):
         form = ProductForm()
     return render(request, 'store/add_product.html', {'form': form})
 
+# Edit product view (staff only)
 @login_required
 @user_passes_test(staff_required)
 def edit_product(request, product_id):
@@ -109,6 +120,7 @@ def edit_product(request, product_id):
         form = ProductForm(instance=product)
     return render(request, 'store/edit_product.html', {'form': form, 'product': product})
 
+# User profile view
 @login_required
 def profile(request):
     try:
@@ -129,9 +141,11 @@ def profile(request):
 
     return render(request, 'store/profile.html', {'user_form': user_form, 'profile_form': profile_form})
 
+# Custom login view
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
 
+# User registration view
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -143,6 +157,7 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+# Add category view (staff only)
 @login_required
 @user_passes_test(staff_required)
 def add_category(request):
@@ -155,6 +170,7 @@ def add_category(request):
         form = CategoryForm()
     return render(request, 'store/add_category.html', {'form': form})
 
+# Edit category view (staff only)
 @login_required
 @user_passes_test(staff_required)
 def edit_category(request, category_id):
@@ -168,6 +184,7 @@ def edit_category(request, category_id):
         form = CategoryForm(instance=category)
     return render(request, 'store/edit_category.html', {'form': form, 'category': category})
 
+# Delete category view (staff only)
 @login_required
 @user_passes_test(staff_required)
 def delete_category(request, category_id):
