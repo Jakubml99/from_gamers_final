@@ -25,7 +25,7 @@ class Profile(models.Model):
     state = models.CharField(max_length=50, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # Fix the typo here
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -60,6 +60,14 @@ class Order(models.Model):
         ('canceled', 'Canceled')
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zipcode = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    payment_method = models.CharField(max_length=50)
+    delivery_date = models.DateField()
     order_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -67,14 +75,20 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id}"
 
+    def get_total_cost(self):
+        return sum(item.get_cost() for item in self.items.all())
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)  # Default quantity set to 1
+    quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.quantity} of {self.product.name}"
+
+    def get_cost(self):
+        return self.quantity * self.price
 
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
@@ -90,10 +104,23 @@ class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Cart of {self.user.username}"
+
+    def get_total_cost(self):
+        return sum(item.get_cost() for item in self.items.all())
+
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"{self.quantity} of {self.product.name}"
+
+    def get_cost(self):
+        return self.quantity * self.price
 
 class Wishlist(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wishlist')

@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
-from django.urls import reverse, reverse_lazy  # Add reverse_lazy import
-from .models import Product, OrderItem, Order, Profile, Category, Review
+from django.urls import reverse, reverse_lazy
+from .models import Product, OrderItem, Order, Profile, Category, Review, Cart, CartItem
 from .forms import ProductForm, UserForm, ProfileForm, CategoryForm, ReviewForm, CustomUserCreationForm
 from django.contrib import messages
 
@@ -31,63 +31,109 @@ def product_list(request):
     }
     return render(request, 'store/product_list.html', context)
 
+# Add product to cart
+@login_required
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={'price': product.price})
+
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+
+    messages.success(request, f'{product.name} was added to your cart.')
+    return redirect('view_cart')
+
 # View cart
 @login_required
 def view_cart(request):
-    order = Order.objects.filter(user=request.user, status='pending').first()
-    return render(request, 'store/cart.html', {'order': order})
-
-# Add product to cart
-def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    order, created = Order.objects.get_or_create(user=request.user, status='pending')
-
-    # Get quantity from request or default to 1
-    quantity = int(request.GET.get('quantity', 1))
-
-    # Ensure quantity is not less than 1
-    if quantity < 1:
-        quantity = 1
-
-    order_item, created = OrderItem.objects.get_or_create(order=order, product=product,
-                                                          defaults={'price': product.price, 'quantity': quantity})
-
-    if not created:
-        order_item.quantity += quantity
-        order_item.save()
-
-    return redirect('store:view_cart')
-
+    cart = Cart.objects.filter(user=request.user).first()
+    return render(request, 'store/cart.html', {'cart': cart})
 
 # Update cart item quantity
 @login_required
 def update_cart(request, item_id):
-    order_item = get_object_or_404(OrderItem, id=item_id, order__user=request.user, order__status='pending')
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity', 1))
         if quantity > 0:
-            order_item.quantity = quantity
-            order_item.save()
+            cart_item.quantity = quantity
+            cart_item.save()
         else:
-            order_item.delete()
-    return redirect('store:view_cart')
+            cart_item.delete()
+    return redirect('view_cart')
 
 # Delete cart item
 @login_required
 def delete_from_cart(request, item_id):
-    order_item = get_object_or_404(OrderItem, id=item_id, order__user=request.user, order__status='pending')
-    order_item.delete()
-    return redirect('store:view_cart')
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    cart_item.delete()
+    messages.success(request, 'Item removed from cart.')
+    return redirect('view_cart')
 
 # Checkout view
 @login_required
 def checkout(request):
-    order = Order.objects.filter(user=request.user, status='pending').first()
+    cart = Cart.objects.filter(user=request.user).first()
+    if not cart or not cart.items.exists():
+        messages.error(request, 'Your cart is empty.')
+        return redirect('view_cart')
+
     if request.method == 'POST':
-        order.status = 'completed'  # Assuming the status should change to 'completed' after checkout
-        order.save()
+        order = Order.objects.create(user=request.user)
+        for item in cart.items.all():
+            OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity, price=item.price)
+        cart.items.all().delete()  # Clear the cart
+        messages.success(request, 'Order placed successfully.')
         return redirect('store:home')
-    return render(request, 'store/checkout.html', {'order': order})
+
+    return render(request, 'store/checkout.html', {'cart': cart})
+
+@login_required
+def place_order(request):
+    if request.method == 'POST':
+        # Retrieve data from the form
+        address = request.POST['address']
+        city = request.POST['city']
+        state = request.POST['state']
+        zipcode = request.POST['zipcode']
+        country = request.POST['country']
+        phone = request.POST['phone']
+        payment_method = request.POST['payment_method']
+        delivery_date = request.POST['delivery_date']
+
+        # Create the order
+        order = Order.objects.create(
+            user=request.user,
+            address=address,
+            city=city,
+            state=state,
+            zipcode=zipcode,
+            country=country,
+            phone=phone,
+            payment_method=payment_method,
+            delivery_date=delivery_date,
+            status='processing'
+        )
+
+        # Move items from cart to order
+        cart = Cart.objects.get(user=request.user)
+        for item in cart.items.all():
+            OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity, price=item.price)
+
+        # Clear the cart
+        cart.items.all().delete()
+
+        # Redirect to order confirmation
+        messages.success(request, 'Order placed successfully!')
+        return redirect('store:order_confirmation')
+
+    return redirect('store:view_cart')
+
+@login_required
+def order_confirmation(request):
+    return render(request, 'store/order_confirmation.html')
 
 # Admin panel view (staff only)
 @login_required
@@ -102,7 +148,8 @@ def admin_panel(request):
         category = get_object_or_404(Category, id=category_id)
         product.category = category
         product.save()
-        return redirect('store:admin_panel')
+        messages.success(request, 'Product category updated successfully.')
+        return redirect('admin_panel')
     return render(request, 'store/admin_panel.html', {'products': products, 'categories': categories})
 
 # Add product view (staff only)
@@ -113,7 +160,8 @@ def add_product(request):
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('store:admin_panel')
+            messages.success(request, 'Product added successfully.')
+            return redirect('admin_panel')
     else:
         form = ProductForm()
     return render(request, 'store/add_product.html', {'form': form})
@@ -127,7 +175,8 @@ def edit_product(request, product_id):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
-            return redirect('store:admin_panel')
+            messages.success(request, 'Product updated successfully.')
+            return redirect('admin_panel')
     else:
         form = ProductForm(instance=product)
     return render(request, 'store/edit_product.html', {'form': form, 'product': product})
@@ -184,7 +233,6 @@ class CustomLogoutView(LogoutView):
         messages.success(request, 'Logout was successful.')
         return super().post(request, *args, **kwargs)
 
-
 # Add category view (staff only)
 @login_required
 @user_passes_test(staff_required)
@@ -194,7 +242,7 @@ def add_category(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Category added successfully.')
-            return redirect('store:admin_panel')
+            return redirect('admin_panel')
     else:
         form = CategoryForm()
     return render(request, 'store/add_category.html', {'form': form})
@@ -209,7 +257,7 @@ def edit_category(request, category_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Category updated successfully.')
-            return redirect('store:admin_panel')
+            return redirect('admin_panel')
     else:
         form = CategoryForm(instance=category)
     return render(request, 'store/edit_category.html', {'form': form, 'category': category})
@@ -222,5 +270,5 @@ def delete_category(request, category_id):
     if request.method == 'POST':
         category.delete()
         messages.success(request, 'Category deleted successfully.')
-        return redirect('store:admin_panel')
+        return redirect('admin_panel')
     return render(request, 'store/delete_category.html', {'category': category})

@@ -1,26 +1,25 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Product, Profile, Category, Review, Product, CustomUser
+from .models import Product, Profile, Category, Review, CustomUser
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'stock', 'category', 'image_url']  # or 'image' if using ImageField
+        fields = ['name', 'description', 'price', 'stock', 'category', 'image_url', 'image']  # Include 'image' if using ImageField
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
         }
 
 class UserForm(forms.ModelForm):
     class Meta:
-        model = User
+        model = CustomUser  # Update to use CustomUser
         fields = ['username', 'email']
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['address', 'city', 'state', 'zipcode', 'country', 'phone_number']
-        # If you have 'favorites' field in Profile model, include it here
-        # fields = ['address', 'city', 'state', 'zipcode', 'country', 'phone_number', 'favorites']
 
 class CategoryForm(forms.ModelForm):
     class Meta:
