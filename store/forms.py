@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Product, Profile, Category, Review, Product
+from .models import Product, Profile, Category, Review, Product, CustomUser
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
@@ -30,3 +31,13 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ['rating', 'comment']
+
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = ('username', 'email', 'password1', 'password2')
+
+class CustomAuthenticationForm(AuthenticationForm):
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'password')

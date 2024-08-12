@@ -15,21 +15,17 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="cart-items">
             {% for item in order.items.all %}
-            <tr>
+            <tr data-item-id="{{ item.id }}">
                 <td>{{ item.product.name }}</td>
-                <td>${{ item.price }}</td>
+                <td class="item-price">${{ item.price }}</td>
                 <td>
-                    <form method="post" action="{% url 'store:update_cart' item.id %}">
-                        {% csrf_token %}
-                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control d-inline-block w-25">
-                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
-                    </form>
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control d-inline-block w-25 quantity-input" data-item-id="{{ item.id }}">
                 </td>
-                <td>${{ item.get_cost }}</td>
+                <td class="item-total">${{ item.get_cost }}</td>
                 <td>
-                    <form method="post" action="{% url 'store:delete_from_cart' item.id %}">
+                    <form method="post" class="delete-form" action="{% url 'store:delete_from_cart' item.id %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                     </form>
@@ -38,9 +34,57 @@
             {% endfor %}
         </tbody>
     </table>
-    <h3>Total: ${{ order.get_total_cost }}</h3>
+    <h3>Total: $<span id="cart-total">{{ order.get_total_cost }}</span></h3>
     <a href="{% url 'store:checkout' %}" class="btn btn-success">Proceed to Checkout</a>
 {% else %}
     <p>Your cart is empty.</p>
 {% endif %}
+
+<script>
+    // Function to update the total cost for an item
+    function updateItemTotal(itemId, quantity, price) {
+        const itemTotalElement = document.querySelector(`tr[data-item-id="${itemId}"] .item-total`);
+        const total = (quantity * price).toFixed(2);
+        itemTotalElement.textContent = `$${total}`;
+    }
+
+    // Function to update the overall cart total
+    function updateCartTotal() {
+        let total = 0;
+        document.querySelectorAll('.item-total').forEach(function(itemTotalElement) {
+            total += parseFloat(itemTotalElement.textContent.replace('$', ''));
+        });
+        document.getElementById('cart-total').textContent = total.toFixed(2);
+    }
+
+    // Event listener for quantity changes
+    document.querySelectorAll('.quantity-input').forEach(function(input) {
+        input.addEventListener('change', function() {
+            const itemId = this.dataset['itemId'];
+            const quantity = this.value;
+            const price = parseFloat(document.querySelector(`tr[data-item-id="${itemId}"] .item-price`).textContent.replace('$', ''));
+
+            // Update the item's total
+            updateItemTotal(itemId, quantity, price);
+
+            // Update the cart's total
+            updateCartTotal();
+
+            // Optionally, you can send the update to the server using AJAX (not covered in this snippet)
+        });
+    });
+
+    // Event listener for delete buttons
+    document.querySelectorAll('.delete-form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const itemId = form.closest('tr').dataset['itemId'];
+            form.closest('tr').remove();
+            updateCartTotal();
+
+            // Optionally, you can send the delete request to the server using AJAX (not covered in this snippet)
+        });
+    });
+</script>
+
 {% endblock %}

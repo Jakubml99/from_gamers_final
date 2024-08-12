@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
+from .views import CustomLogoutView
 from django.contrib.auth.views import (
-    LogoutView, PasswordChangeView, PasswordChangeDoneView,
+    PasswordChangeView, PasswordChangeDoneView,
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView,
     PasswordResetCompleteView
 )
@@ -23,7 +24,7 @@ urlpatterns = [
     path('add_category/', views.add_category, name='add_category'),
     path('edit_category/<int:category_id>/', views.edit_category, name='edit_category'),
     path('accounts/login/', views.CustomLoginView.as_view(), name='login'),
-    path('accounts/logout/', LogoutView.as_view(next_page='store:home'), name='logout'),
+    path('accounts/logout/', CustomLogoutView.as_view(), name='logout'), # Use CustomLogoutView
     path('accounts/register/', views.register, name='register'),
     path('accounts/password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('accounts/password_change/done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
