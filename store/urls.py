@@ -7,13 +7,12 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView
 )
 
-app_name = 'store'
+app_name = 'store'  # Ensure 'store' is the correct namespace
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('products/', views.product_list, name='product_list'),
     path('cart/', views.view_cart, name='view_cart'),
-    path('cart/', views.view_cart, name='cart_detail'),
     path('profile/', views.profile, name='profile'),
     path('admin/', views.admin_panel, name='admin_panel'),
     path('add_to_cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
@@ -27,7 +26,7 @@ urlpatterns = [
     path('add_category/', views.add_category, name='add_category'),
     path('edit_category/<int:category_id>/', views.edit_category, name='edit_category'),
     path('accounts/login/', views.CustomLoginView.as_view(), name='login'),
-    path('accounts/logout/', CustomLogoutView.as_view(), name='logout'), # Use CustomLogoutView
+    path('accounts/logout/', CustomLogoutView.as_view(), name='logout'),
     path('accounts/register/', views.register, name='register'),
     path('accounts/password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('accounts/password_change/done/', PasswordChangeDoneView.as_view(), name='password_change_done'),

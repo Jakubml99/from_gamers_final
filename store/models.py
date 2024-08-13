@@ -25,7 +25,7 @@ class Profile(models.Model):
     state = models.CharField(max_length=50, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)  # Increase the length here
 
     def __str__(self):
         return f'{self.user.username} Profile'

@@ -43,7 +43,7 @@ def add_to_cart(request, product_id):
         cart_item.save()
 
     messages.success(request, f'{product.name} was added to your cart.')
-    return redirect('view_cart')
+    return redirect('store:view_cart')  # Updated to include 'store:' for namespacing
 
 # View cart
 @login_required
@@ -62,7 +62,7 @@ def update_cart(request, item_id):
             cart_item.save()
         else:
             cart_item.delete()
-    return redirect('view_cart')
+    return redirect('store:view_cart')  # Updated to include 'store:' for namespacing
 
 # Delete cart item
 @login_required
@@ -70,7 +70,7 @@ def delete_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     cart_item.delete()
     messages.success(request, 'Item removed from cart.')
-    return redirect('view_cart')
+    return redirect('store:view_cart')  # Updated to include 'store:' for namespacing
 
 # Checkout view
 @login_required
@@ -78,7 +78,7 @@ def checkout(request):
     cart = Cart.objects.filter(user=request.user).first()
     if not cart or not cart.items.exists():
         messages.error(request, 'Your cart is empty.')
-        return redirect('view_cart')
+        return redirect('store:view_cart')  # Updated to include 'store:' for namespacing
 
     if request.method == 'POST':
         order = Order.objects.create(user=request.user)
@@ -129,7 +129,7 @@ def place_order(request):
         messages.success(request, 'Order placed successfully!')
         return redirect('store:order_confirmation')
 
-    return redirect('store:view_cart')
+    return redirect('store:view_cart')  # Updated to include 'store:' for namespacing
 
 @login_required
 def order_confirmation(request):
@@ -149,7 +149,7 @@ def admin_panel(request):
         product.category = category
         product.save()
         messages.success(request, 'Product category updated successfully.')
-        return redirect('admin_panel')
+        return redirect('store:admin_panel')
     return render(request, 'store/admin_panel.html', {'products': products, 'categories': categories})
 
 # Add product view (staff only)
@@ -161,7 +161,7 @@ def add_product(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Product added successfully.')
-            return redirect('admin_panel')
+            return redirect('store:admin_panel')
     else:
         form = ProductForm()
     return render(request, 'store/add_product.html', {'form': form})
@@ -176,7 +176,7 @@ def edit_product(request, product_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Product updated successfully.')
-            return redirect('admin_panel')
+            return redirect('store:admin_panel')
     else:
         form = ProductForm(instance=product)
     return render(request, 'store/edit_product.html', {'form': form, 'product': product})
@@ -242,7 +242,7 @@ def add_category(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Category added successfully.')
-            return redirect('admin_panel')
+            return redirect('store:admin_panel')
     else:
         form = CategoryForm()
     return render(request, 'store/add_category.html', {'form': form})
@@ -257,7 +257,7 @@ def edit_category(request, category_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Category updated successfully.')
-            return redirect('admin_panel')
+            return redirect('store:admin_panel')
     else:
         form = CategoryForm(instance=category)
     return render(request, 'store/edit_category.html', {'form': form, 'category': category})
@@ -270,5 +270,5 @@ def delete_category(request, category_id):
     if request.method == 'POST':
         category.delete()
         messages.success(request, 'Category deleted successfully.')
-        return redirect('admin_panel')
+        return redirect('store:admin_panel')
     return render(request, 'store/delete_category.html', {'category': category})
